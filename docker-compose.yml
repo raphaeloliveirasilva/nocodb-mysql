@@ -1,0 +1,49 @@
+version: "3.3"
+
+services: 
+
+  nocodb:
+    container_name: nocodb
+    image: "nocodb/nocodb:0.204.0"
+    restart: always
+    environment: 
+      NC_DB: "mysql2://mysqlnocodb:3306?u=nocodb&p=200203&d=nocodb"
+      NC_PUBLIC_URL: "https://nocodb.genialrastreamento.com.br" 
+    networks:
+      - nginx
+      - nocodb
+    depends_on: 
+      -  mysqlnocodb 
+            
+  mysqlnocodb:
+    container_name: mysqlnocodb
+    image: "mysql:8.3.0"
+    restart: always
+    environment: 
+      MYSQL_DATABASE: nocodb
+      MYSQL_PASSWORD: 200203
+      MYSQL_ROOT_PASSWORD: 200203
+      MYSQL_USER: nocodb
+    volumes: 
+      - ./mysql/data:/var/lib/mysql
+    healthcheck: 
+      retries: 10
+      test: 
+        - CMD
+        - mysqladmin
+        - ping
+        - "-h"
+        - localhost
+      timeout: 20s
+    networks:
+      - nocodb
+    
+#    below line shows how to change charset and collation
+#    uncomment it if necessary
+#    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+networks:
+  nginx:
+    external: true
+  nocodb:
+    external: true
